@@ -18,7 +18,7 @@
   5. ##[5. 认证器](#5.1)
      1. [认证器概述](#5.1)
      2. [fido client 认证器同 fido client ASM 的交互](#5.2)
-     3. 认证器返回的信息同服务器的关联
+     3. [认证器返回的信息同服务器的关联](#5.3)
   
   </br></br>
 
@@ -34,7 +34,7 @@
    
  <h3 id="1.2">1.2总体流程阐述</h3> 
 1.  fido获取信息的过程：
-   * ASM在注册，认证，注销的操作之前，都要获取和ASM关联的认证器的信息，认证器的信息大致包括:authenticatorIndex; isUserEnrolled;aaid;assertionScheme; authenticationAlgorithm;userVerification等信息，用于在之后的操作中使用。
+   * Fido Client在每次接收到FidoSever的Request信息之后（任何操作流程）都要获取和ASM关联的认证器的信息，认证器的信息大致包括:authenticatorIndex; isUserEnrolled;aaid;assertionScheme; authenticationAlgorithm;userVerification等信息，用于在之后的操作中使用。
     
 1.  fido注册的过程：（这里只针对一因子的认证器）
    </br>fido注册的基本流程大致阐述如下：    
@@ -90,12 +90,15 @@
   * 2.使用认证器自己的特定的摘要信息算法计算FinalChallengeParams的摘要数值
   * 3.监听验证器返回的信息情况，并对验证器的信息做适当的封装，传给FidoClient
    <h3 id="4.2">4.3 fido client ASM 同认证器交互</h3>ASM同认证器的交互信息主要包括一下几个方面：
-  
-  *  1.ASM在所有注册，认证，注销的操作之前，需要获取所有认证器的信息
-  *  2.ASM在形成向认证器传入请求数据之前，需要让调用认证器去验证用户身份。
-  *  3.ASM会形成KHAccessToken，作为认证器可以信任的数据依据，去访问认证器
-  *  4.若认证器是绑定类认证器，则存储KeyHandle和KeyId到认证器的数据库中，并在之后做查询，提取KeyHandle的功能。
+
+  *  1.ASM在形成向认证器传入请求数据之前，需要让调用认证器去验证用户身份。
+  *  2.ASM会形成KHAccessToken，作为认证器可以信任的数据依据，去访问认证器
+  *  3.若认证器是绑定类认证器，则存储KeyHandle和KeyId到认证器的数据库中，并在之后做查询，提取KeyHandle的功能。
   
   <h2 id="5.1">5.认证器</h2>
-   <h3 id="5.1">5.1 认证器概述</h3>
-  
+   <h3 id="5.1">5.1 认证器概述</h3>认证器是根据用户注册的人体特征来对用户进行身份识别的硬件机器，这里的人体特征包括指纹，声音，虹膜等各种各样的信息，当然也就对应各种各样的认证器，比如指纹认证器，声音认证器，虹膜认证器
+   <h3 id="5.2">5.2 认证器和ASM的关系</h3>认证器和ASM一个实现了fido协议的硬件端，一个是实现了fido的协议硬件向软件过渡的桥梁。ASM和认证器的关系主要体现在：
+
+* 1.认证器通过ASM进行数据的交互，ASM将数据（比如KeyHandle，KHAccessToken等）交给认证器做逻辑处理，同时，认证器也将重要的信息交给ASM（KeyID，KeyHandle等等），同也有向fidoSever的交互的信息（签名信息，挑战信息，公钥等），也需要通过ASM来向上传递。
+* 2. 认证器协同配合ASM做用户身份认证：ASM在每次操作之前，都让认证器去验证用户的身份是否正确，这里体现了认证器基于人体特征的身份识别功能。
+* 3.根据用户的人体特征来产生公钥私钥对，并且具有自己的hash算法，让ASM用认证器特定的算法来生成挑战的摘要信息，用于服务器的之后的认证过程。
