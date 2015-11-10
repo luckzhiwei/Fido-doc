@@ -16,8 +16,8 @@
       3. [2.4 fido client ASM](fido架构阐述.html#4.1)
       4. [2.5 fido client 认证器](fido架构阐述.html#5.1)
   3.  ##[fido 操作流程阐述](fido具体操作流程.html) 
-      1. 3.1  GetInfo 操作流程
-      2. 3.2  Register 操作流程
+      1. [3.1  GetInfo 操作流程](fido具体操作流程.html#1.1)
+      2. [3.2  Register 操作流程](fido具体操作流程.html#2.1)
       3. 3.3  Authenticate 操作流程
       4. 3.4  DeRegeister 操作流程
    
