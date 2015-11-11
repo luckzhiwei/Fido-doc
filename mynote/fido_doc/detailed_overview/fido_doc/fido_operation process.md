@@ -22,17 +22,17 @@
        * [7.Fido Client](#2.2.7)
        * [8.Fido Server](#2.2.8)
        
-  3. ## Authenticate 操作流程
-    1. Authenticate操作的目的 
-    2. Authenticate操作具体流程以及数据演变
-       * 1.Fido Client
-       * 2.Fido Server
-       * 3.Fido Client
-       * 4.ASM
-       * 5.认证器
-       * 6.ASM
-       * 7.Fido Client
-       * 8.Fido Server
+  3. ## [Authenticate 操作流程](#3.1)
+    1. [Authenticate操作的目的](#3.1) 
+    2. [Authenticate操作具体流程以及数据演变](#3.2)
+       * [1.Fido Client](#3.2.1)
+       * [2.Fido Server](#3.2.2)
+       * [3.Fido Client](#3.2.3)
+       * [4.ASM](#3.2.4)
+       * [5.认证器](#3.2.5)
+       * [6.ASM](#3.2.6)
+       * [7.Fido Client](#3.2.7)
+       * [8.Fido Server](#3.2.8)
 
 
 
@@ -145,7 +145,7 @@
    * 根据AppID获取到faceID：
 
        *  如果
-       *  如uo
+       *  如果
        *  如果
       
    * 根据policy的信息，筛选出符合的认证器:
@@ -156,8 +156,62 @@
       * 
       
    * 找到匹配的认证器后，让用户选择用户想使用的认证器(authenticatorIndex)
-   * 
+   * 形成FinalChallenge的信息，计算方法和注册时候的是一样的。
+   * 形成如下图的格式的请求数据，交给ASM.![](5.1.8.png)
        
 
+   <h5 id="3.2.4">4.ASM</h5>ASM收到信息后，做如下的操作：
 
+   1. 根据authenticatorIndex找到对应的认证器
+   2. 如果认证器中没有用户的身份特征信息，则返回拒绝的响应状态码
+   3. ASM要求认证器去检验用户的身份，如果用户的身份检验失败，则返回被拒绝的响应字段
+        
+    * 如果认证器支持UserVerificationToken这个字段，则将UserVerificationToken这个字段也发给认证器
+  4. 生成KeyHandleAcessToken的数值，这个计算的方式和注册的时候的一样的（KeyHandleAcessToken主要用于认证器去信任ASM）
+  5. 用认证器的自己的hash算法计算finalChallegne的摘要
+  6. 如果是二因子的认证器，发现KeyIDs为空，则返回拒绝的响应字段   
+  7. 如果keyIDs不为空（KeyID就是用来寻找KeyHandle的）
+    *  如果为绑定类型的认证器，则通过AppId，KeyId在ASM的数据库中去查找对应的KeyHandle
+    *  如果为非绑定类型的认证器，则将keyID放入KeyHandle的字段中去（远程认证器是在注册时候将keyHanlde存储在内部的）      
+  
+ 8.形成如下的信息格式发送给验证器 ![](5.1.10.png)
+        
+  <h5 id="3.2.5">5.认证器</h5>认证器收到请求后，做如下的操作：
    
+  1. 更新KeyAcessToken的数值（计算方法和注册过程是一样的）
+  2. 如果认证器中有用户的身份特征信息（比如指纹，虹膜等）则验证用户的身份是否正确，并且验证UserVerificationToken字段是否有效
+     * 如果验证失败，则返回拒绝的状态码
+     * 如果用户有取消操作的动作，如果有，则返回取消操作的状态码
+  3. 如果用户没有注册，则返回没有注册的验证信息
+  4. 用验证器的内部的加密算法（AES算法）解密KeyHandle的数值
+  5. 用KeyAcessToken的数值来过滤第4步找到的所有的KeyHandle，比较两者的摘要是否一致。RawKeyHandle.KHAccessToken == Command.KHAccessToken主要用于认证器信任消息确实为ASM所发
+  6. 经过过滤之后，如果KeyHandle的个数为零，则返回拒绝验证的状态码
+  7. 如果剩下的KeyHandle的个数的大于1
+    * 如果为二因子的认证器，则直接挑选第一个keyHnadle然后进入第8步骤
+    * 形成{Command.KeyHandle, RawKeyHandle.username}的这样一对对的元组信息，放入TAG_USERNAME_AND_KEYHANDLEs字段中，然后返回给ASM
+  8. 如果剩下的KeyHandle的等于1：
+    * 构造ASSERTION的信息
+       * 形成证书信息（证书信息包括：AAID，CHALLENGE,COUNTERS[引用计数器]等）
+       * 用私钥签名证书的信息
+    * 形成如下图所示的信息体，然后返回ASM![](5.2.7.png)
+     
+        
+   <h5 id="3.2.6">6.ASM</h5>ASM收到认证器返回的消息之后，做如下的操作
+
+   * 1.如果是一因子的认证器，而且 TAG_USERNAME_AND_KEYHANDLE字段不为空的话：
+     * 1.从字段中提取出所有的{Command.KeyHandle, RawKeyHandle.username}元组对
+     * 2.找到所有元组中是否相同username，如果多个相同，则根据注册阶段在ASM的数据库中的注册时间，挑选一个注册时间最近的username做处理，剩下的username都排除
+     * 3.如果剩下的元组的个数都还是大于1，则让用户选择一个username，从而找到一个对应的keyHandle
+     * 4.用户选择完成之后，重复[4.ASM](#3.2.4)的步骤中的第8步再次请求ASM
+  * 2.如果上述条件不满足，则形成如下图所示数据，向FidoClient传递
+   ![](5.2.8.png)        
+   
+   <h5 id="3.2.7">7.FidoClient</h5>FidoClient收到ASM返回的数据后，做如下操作：
+
+   * 形成Header的信息(Header信息就是fidosever开始请求的header的信息)
+   * 形成将FinalChallenge的信息加入返回消息体中
+   * 将ASM的信息也加入返回的消息中
+   * 形成如下图所示的消息体:![](5.2.9.png)
+   * 发送给fidoserver
+
+   <h5 id="3.2.8">8.FidoServer</h5>FidoSever收到消息后，做签名计数器验证，挑战的签名验证等一系列的工作
