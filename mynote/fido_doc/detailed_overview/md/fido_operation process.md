@@ -1,8 +1,8 @@
-#fido 操作流程阐述 
+# fido 操作流程阐述 
 
 
-  1. ##[GetInfo操作](#1.1)
-    1.[GetInfo操作的目的](#1.1)
+  1. ## [GetInfo操作](#1.1)
+    1. [GetInfo操作的目的](#1.1)
     2. [GetInfo操作具体步骤程以及数据演变](#1.2)
        * [1.Fido Client](#1.2.1)
        * [2.ASM](#1.2.2)
@@ -10,7 +10,7 @@
        * [4.ASM](#1.2.4)
        * [5.Fido Client](#1.2.5)
 
-  2. ##[Register操作](#2.1)
+  2. ## [Register操作](#2.1)
      1. [Register操作的目的](#2.1)
      2. [Register操作具体流程以及数据演变](#2.2)
        * [1.Fido Client](#2.2.1)
@@ -22,7 +22,7 @@
        * [7.Fido Client](#2.2.7)
        * [8.Fido Server](#2.2.8)
        
-  3. ##Authenticate 操作流程
+  3. ## Authenticate 操作流程
     1. Authenticate操作的目的 
     2. Authenticate操作具体流程以及数据演变
        * 1.Fido Client
@@ -69,7 +69,7 @@
        * 搜集所有可用的认证器信息
        * 排除policy.disallowed的信息
        * 找到匹配policy.accepted中包含的认证器
-       * 引导用户使用匹配成功的认证器（这里不是太清楚）
+       * 引导用户使用匹配成功的认证器（让用户选择匹配成功的认证器）
  *  4.根据AppID来获取FacetId，具体的操作如下：
        * 1.
        * 2.
@@ -133,4 +133,31 @@
 
  <h5 id="2.2.8">8.Fido Sever</h5>FidoSever做后续处理，比如存储KeyID，验证签名是否正确等等
      
-  
+  <h2 id="3.1">3.Authenticate操作</h2>
+   <h3 id="3.1">3.1 Authenticate操作的目的</h3>认证操作的主要目的是在注册操作已经完成
+   <h3 id="3.2">3.2 Authenticate操作具体流程以及数据演变</h3>认证过程中每一步的操作以及每一层做的具体的事情如下所示
+   <h5 id="3.2.1">1.Fido Client</h5>Fido Client向服务器发送验证的请求，请求内容包含userName。
+   <h5 id="3.2.2">2.Fido Server</h5>Fido Server组织信息如下图所示（由于本文档主要面向客户端，因此server如何组织的信息，这里略去）
+   ![](5.2.2.png)</br>可以看到，fidosever发送的信息中，含有header[upv,severData,op],challenge,policy[accpeted[keyid,aaid],disallow],其中，keyID和AAID是在注册过程认证器留在服务器上的信息（注：keyID和AAID的组合一定是唯一的）
+   <h5 id="3.2.3">3.Fido Client</h5>FidoClient收到FidoServer的消息后，作如下操作：
+    
+   * 用json解析信息服务器的报文体
+   * 根据AppID获取到faceID：
+
+       *  如果
+       *  如uo
+       *  如果
+      
+   * 根据policy的信息，筛选出符合的认证器:
+      * 根据经常使用的认证器信息来选择policy.accpted的中的组合信息
+      * 搜集所有可用的认证器信息
+      * 如果有认证器的信息在policy.disallowed中，则忽略这些信息
+      * 根据policy中的信息来匹配认证器的信息
+      * 
+      
+   * 找到匹配的认证器后，让用户选择用户想使用的认证器(authenticatorIndex)
+   * 
+       
+
+
+   
