@@ -15,7 +15,7 @@
      1. [fido client ASM 同fido Client交互](#4.2)
      2. [fido client ASM 同 fido 认证器交互](#4.3)
      
-  5. ##[5. 认证器](#5.1)
+  5. ## [5. 认证器](#5.1)
      1. [认证器概述](#5.1)
      2. [fido client 认证器同 fido client ASM 的交互](#5.2)
      3. [认证器返回的信息同服务器的关联](#5.3)
