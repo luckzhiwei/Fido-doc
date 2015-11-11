@@ -110,10 +110,10 @@
    9. 按照协议规范组织KRD的内容
    10. 生成签名证书TAG_AUTHENTICATOR_ASSERTION的内容：
       * 生成KRD的摘要信息，并且用私钥对KRD进行签名。
-      * 如果是第一类认证器，则会把keyHandle发给ASM保存，如果是
+      * 如果是第一类认证器，则会把keyHandle发给ASM保存，如果是二因子的认证器，则要直接把username和keyHanlde保存在认证器内部
       * 加入X509的证书信息
       * 按照TLV的形式组织TAG_AUTHENTICATOR_ASSERTION的内容
-   11. 将KRD和TAG_AUTHENTICATOR_ASSERTION按照TLV的形式返回给ASM，数据信息如下：![](5.1.12.png)
+   11. 将KRD和TAG_AUTHkeENTICATOR_ASSERTION按照TLV的形式返回给ASM，数据信息如下：![](5.1.12.png)
    
  <h5 id="2.2.6">6.ASM</h5>ASM收到认证返回的信息之后，做如下操作：
   
