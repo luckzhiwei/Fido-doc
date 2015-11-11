@@ -1,4 +1,4 @@
-# Fido 中的 Q & A
+#  Fido 中的 Q & A
 
   * [ASM 传递给认证器的信息中TAG_KEYHANDLE_ACCESS_TOKEN 是怎样生成的？有什么作用？](#1)
   *  [在注册的过程中，认证器返回X509证书的作用是？](#2)
