@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Fido 中的Q&A</title>
+<title>fido_Q&A</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">
 /* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
@@ -349,7 +349,7 @@ img {
 那么，找出了多个KeyHandle后，ASM和认证器又做了什么处理呢？我们仔细看文档中的截图：<img src="4.1.7.png" />这里首先从认证器出发，认证器发现有大于一个KeyHnadle，则会把KeyHandle中的UsernName都返回给认证器，然后认证器这样做<img src="4.1.8.png" />认证会先找出相同的userName，然后选取最近注册过的userName，然后让从不同的用户名字中，让用户选择一个用户名字来进行确认，用户选择了之后，再将最终的KeyHandle返回给认证器。</p>
 <h2 id="8">Question 8</h2><p>这个确实还没有搞清楚，之后看了文档仔细说</p>
 <h2 id="9">Question 9</h2><p>这个字段的最关键作用就是ASM让认证器去识别用户的身份的，也是Fido协议的实现用户身份可靠性的一个关键点。无论是在fido的注册还是认证过程中，用户都是事先在认证器中注册过自己的身份的。因此，每当遇见在注册，认证过程中，ASM都会事先要求认证器验证用户身份的正确性，这时候，如果认证器认证用户成功，UserVerificationToken这个字段就会生成，然后ASM会把这个字段再次发给认证器，认证器也会再次对UserVerificationToken字段做认证。文档中截图如下所示</br><img src="4.1.5.png" /></br>[图为注册过程中，ASM的要求认证器认证器用户身份的操作]</br><img src="4.1.6.png" /></br>[图为注册过程，认证器收到ASM的信息后检验UserVerificationToken的操作]</p>
-<h2 id="10">Question 10</h2><p>用于服务器验证客户是否将挑战签名成功的一个关键因素。服务器收到客户端的assertion字段之后，会解析到FinalChanlleageParams 的摘要信息(这个信息是认证器已经做好了的)，然后将客户端发过来的FinalChanlleageParams再次计算摘要信息，比对两次计算的摘要信息是否一致，如果不一致，则用户签名挑战失败，如果一致，则表示用户认证成功</p>
+<h2 id="10">Question 10</h2><p>用于服务器验证客户是否将挑战签名成功的一个关键因素。服务器收到客户端的assertion字段之后，会解析到FinalChanlleageParams 的摘要信息(这个信息是认证器已经做好了的)，然后会通过相同的算法再次计算一次摘要信息，比对两次计算的摘要信息是否一致，如果不一致，则用户签名挑战失败，如果一致，则表示用户认证成功。</br>认证器的产生的私钥信息，主要用于服务器认证信息是否为客户端所发的。</p>
 <h2 id="11">Question 11</h2><p>:根据文档中，ASM在认证的过程中，会出现这样一句话：!<img src="4.1.9.png" />意思是说，如果用户在认证之前，没有注册过这个认证器的话，那么，认证的过程是失败的，所以，我的理解应该是，每一个用户在使用一个新的认证器之前，都要去注册（比如A用户使用认证器A做支付宝的指纹支付，B用户使用认证器B做支付宝的支付，某天B用户需要用A用户的认证器来做支付，那么，如果B用户没有注册，则首次的支付应该是失败的）(注：这种情况应该是一因子认证器的)</p>
 <h2 id="12">Question 12</h2><p>考虑上一个问题的情况，如果出现上一种情况，那么B用户在A 的认证器A上再次注册后，服务器上就会存在userName对应多个KeyId，因此，在B用户之后支付认证的过程中，服务器可能会发送多个keyIDs给客户端，让ASM去筛选那个KeyIDs才可能匹配。</p>
 
