@@ -49,8 +49,8 @@
      * 2.向所有的认证器发送GetInfo指令
      * 向认证器发送信息的结构截图所示：![](5.1.3.png)
    3. <h5 id="1.2.3">认证器:</h5>认证器收到GetInfo的请求后，GetInfo返回体，然后把认证器的详细信息返回给ASM
-   4. <h5 id="1.2.4">ASM:</h5>ASM收到信息后，基本不做过多处理，简单组织信息后，直接返回给FidoClient,返回的信息体如下![](5.1.5.png)</br>可以看到，返回信息的中含有，比如认证器的索引值，认证器的AAID，认证器的类型等等关键信息
-   5. <h5 id="1.2.5">Fido Client:</h5>Fido Client收到信息之后，会将服务器的policy中的信息和认证器信息进行匹配，进行筛选符合服务器要求的认证器的工作，并让用户选择筛选过后的认证器所认证。
+   4. <h5 id="1.2.4">ASM:</h5>ASM收到信息后，基本不做过多处理，简单组织信息后，直接返回给FidoClient,返回的信息体如下![](5.1.5.png)</br>可以看到，返回信息的中含有，比如认证器的索引值，认证器的AAID，认证器的类型等等关键信息/
+   5. <h5 id="1.2.5">Fido Client:</h5>Fido Client收到信息之后，会将服务器的policy中的信息和认证器信息进行匹配，进行筛选符合服务器要求的认证器的工作，并让用户选择筛选过后的认证器来进行之后的注册，认证等操作。
 
  
  <h2 id="2.1">2.Register操作</h2>
@@ -58,8 +58,8 @@
     
    <h3 id="2.2">2.2 Register操作具体流程以及数据演变
      1. <h5 id="2.2.1">Fido Client:</h5> fidoClient首先会发送如下图所示的信息给Fido Server：![](5.1.6.png)
-     2. <h5 id="2.2.2">Fido Server</h5>Fido Sever收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](5.1.7.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
-     3. <h5 id="2.2.3">3.Fido Client</h5> FidoClient 收到第上面那一步的服务器发送的信息后，做如下操作:
+     2. <h5 id="2.2.2">Fido Server</h5>Fido Server收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](5.1.7.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
+     3. <h5 id="2.2.3">3.Fido Client</h5> FidoClient 收到第前一步的服务器发送的信息后，做如下操作:
       
   * 1.用json解析upv中的major version和minor versionn是否1，0；
   * 2.用json解析服务器发送的全部信息
@@ -67,14 +67,14 @@
        * 解析policy里面的信息（policy里面的信息都是FidoServer认可的，用户可以注册的认证器）
        * 根据设备上最近较常使用的认证器来优先选择policy信息里面的组合
        * 搜集所有可用的认证器信息（GetInfo操作）
-       * 排除有认证器的信息在policy.disallowed的信息
+       * 排除有信息在policy.disallowed的认证器
        * 找到匹配policy.accepted中包含的认证器.
        * 引导用户使用匹配成功的认证器（让用户选择匹配成功的认证器）
  *  4.根据AppID来获取FacetId，具体的操作如下：
        * 1.
        * 2.
        * 3.
- *  5.形成FinalCallengeParams的内容，FinalCallengeParams就是appID 和challenge,facetIdf的json字符串的信息(Base64b编码形成的)计算方式如下 
+ *  5.形成FinalCallengeParams的内容，FinalCallengeParams就是appID 和challenge,facetId的json字符串的信息(Base64b编码形成的)计算方式如下 
       * FinalChallenge = base64url(serialize(utf8encode(fcp)))
  *  6.形成下图所示的信息，并将之发给ASM：![](5.1.8.png)</br>我们可以看到，包含的信息包括（认证器索引信息，操作类型，ASM版本号，请求参数[finalChallege,appID,userName]）
  
@@ -99,7 +99,7 @@
    1. 如果APPID的字段不为空，则再次更新KeyAceessToken的数值 KHAccessToken=hash(KHAccessToken | Command.TAG_APPID)
    2. 如果认证器中已经含有了用户的身份特征信息（比如用户的指纹，声音等类型的信息），认证再次认证用户身份的合法性。如果TAG_USERVERIFY_TOKEN字段不为空，则验证TAG_USERVERIFY_TOKEN字段的合法性；如果认证失败，则返回拒绝的响应状态码。  
    3. 如果认证器中没有没用用户的信息，则当场让认证器记录用户的身份特征信息，如果用户取消记录，则返回取消的状态码，如果记录失败，则返回拒绝的状态代码。
-   4. 确保TAG_ATTESTATION_TYPE 是认证器支持的类型，否则返回不支持的响应的代码
+   4. 确保TAG_ATTESTATION_TYPE（认证方式） 是认证器支持的类型，否则返回不支持的响应的代码
    5. 以上操作都没有问题之后，产生一个密钥对(公私钥)
    6. 生成RawKeyHandle的数据:
     * .将私钥加入RawKeyHandle对象
@@ -118,7 +118,7 @@
  <h5 id="2.2.6">6.ASM</h5>ASM收到认证返回的信息之后，做如下操作：
   
  1. 解析TAG_AUTHENTICATOR_ASSERTION消息体，提取出KEY_ID的的数值
- 2. 如果认证器是绑定类型的认证器，则将CallerID,AppID,TAG_KEYHANDLE,TAG_KEYID,当前系统时间存入ASM的数据库中。
+ 2. 如果认证器是绑定类型的认证器，则将CallerID,AppID,TAG_KEYHANDLE,TAG_KEYID以及当前系统时间等数据一同存入ASM的数据库中。
  3. 构造向FidoClient向上传递的信息体，如下图所示![](5.1.13.png)
  
  <h5 id="2.2.7">7.Fido Client</h5>Fido Client收到ASM的返回的消息体之后，做如下处理：</br>
@@ -134,7 +134,7 @@
  <h5 id="2.2.8">8.Fido Sever</h5>FidoSever做后续处理，比如存储KeyID，验证签名是否正确等等
      
   <h2 id="3.1">3.Authenticate操作</h2>
-   <h3 id="3.1">3.1 Authenticate操作的目的</h3>认证操作的主要目的是就是认证用户身份的合理性。因为用户已经在注册的过程中，生成了一系列的认证数据：比如KeyID，KeyHandle等，这些数据就需要在认证的过程中所用，来认证用户的身份是否符合认证。
+   <h3 id="3.1">3.1 Authenticate操作的目的</h3>认证操作的主要目的是就是认证用户身份的合理性。因为用户已经在注册的过程中生成了一系列的数据：比如KeyID，KeyHandle等，这些数据就需要在认证的过程中为整个fido体系所用，来认证用户的身份是否符合认证。
 
    <h3 id="3.2">3.2 Authenticate操作具体流程以及数据演变</h3>认证过程中每一步的操作以及每一层做的具体的事情如下所示
    <h5 id="3.2.1">1.Fido Client</h5>Fido Client向服务器发送验证的请求，请求内容包含userName。
@@ -149,14 +149,14 @@
        *  如果
        *  如果
       
-   * 根据policy的信息，筛选出符合的认证器:
+   * 根据policy的信息，筛选出符合的认证器:（筛选过程其实和注册的过程是基本一样的）
       * 根据经常使用的认证器信息来选择policy.accpted的中的组合信息。
       * 搜集所有可用的认证器信息。
-      * 如果有认证器的信息在符合policy.disallowed中的信息，则忽略这些信息。
+      * 如果有认证器的信息在符合policy.disallowed中的信息，则忽略这些认证器。
       * 根据policy中的信息来匹配认证器的信息。
       * 然后让用户从匹配成功的认证器挑选一个进行认证。
       
-   * 找到匹配的认证器后，让用户选择用户想使用的认证器(authenticatorIndex)
+   * 找到匹配的认证器后，让用户从中选择一个认证器(也就是找到authenticatorIndex)。
    * 形成FinalChallenge的信息，计算方法和注册时候的是一样的。
    * 形成如下图的格式的请求数据，交给ASM.![](5.1.8.png)
        
@@ -167,8 +167,8 @@
    3. ASM要求认证器去检验用户的身份，如果用户的身份检验失败，则返回被拒绝的响应字段
         
     * 如果认证器支持UserVerificationToken这个字段，则将UserVerificationToken这个字段也发给认证器
-  4. 生成KeyHandleAcessToken的数值，这个计算的方式和注册的时候的一样的（KeyHandleAcessToken主要用于认证器去信任ASM）
-  5. 用认证器的自己的hash算法计算finalChallegne的摘要
+  4. 生成KeyHandleAcessToken的数值，这个计算的方式和注册的时候的一样的（KeyHandleAcessToken主要用于认证器去信任ASM的，因此两次的计算方法自然需要一致）
+  5. 用认证器的hash算法计算finalChallegne的摘要
   6. 如果是二因子的认证器，发现KeyIDs为空，则返回拒绝的响应字段   
   7. 如果keyIDs不为空（KeyID就是用来寻找KeyHandle的）
     *  如果为绑定类型的认证器，则通过AppId，KeyId在ASM的数据库中去查找对应的KeyHandle
@@ -185,9 +185,9 @@
   3. 如果用户没有注册，则返回没有注册的状态码
   4. 用验证器的内部的加密算法（AES算法）解密KeyHandle的数值
   5. 用KeyAcessToken的数值来过滤第4步找到的所有的KeyHandle，比较两者的摘要是否一致。RawKeyHandle.KHAccessToken == Command.KHAccessToken（这一步骤主要用于认证器信任消息确实为ASM所发）
-  6. 经过过滤之后，如果KeyHandle的个数为零，则返回拒绝验证的状态码(s说明了认证器不可信)
+  6. 经过过滤之后，如果KeyHandle的个数为零，则返回拒绝验证的状态码(说明了这次请求的信息不可信)
   7. 如果剩下的KeyHandle的个数的大于1
-    * 如果为二因子的认证器，则直接挑选第一个keyHnadle然后进入第8步骤
+    * 如果为二因子的认证器，则直接挑选第一个keyHnadle然后进入下一步
     * 形成{Command.KeyHandle, RawKeyHandle.username}的这样一对对的元组信息，放入TAG_USERNAME_AND_KEYHANDLEs字段中，然后返回给ASM
   8. 如果剩下的KeyHandle的等于1：
     * 构造ASSERTION的信息
