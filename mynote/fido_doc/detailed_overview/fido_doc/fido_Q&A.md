@@ -12,6 +12,7 @@
   *   [FinalChanlleageParams的作用是什么？](#10)
   *   [不同的用户使用同一个认证器，协议如何解决这个问题？](#11)
   *   [为什么会在认证的过程服务器中出现多个KeyIDs给客户端？](#12)
+  *   [为什么会在认证过程中出现：通过KeyIDs查找KeyHandle的后，会有多个KeyHandle?](#13)
 
 
 
@@ -25,8 +26,7 @@
    
  以上就是KHAcessToken的组成。</br> KHAcessToken 有什么作用呢？
    
-  * 1.首先，KHAcessToken是用认证器的摘要算法生成的，其中ASMToken是ASM一个独自生成的字段，认证器可以通过比较两次，来判定KHAcessToken是来自ASM的，是可以信任的ASM交给认证器的信息。
-  * 2.其次，在注册过程中，这个字段被加入KeyHandle中，从而交给ASM作存储（非绑定类的认证器自己存储）。在注册的过程中，ASM会生成同一个KHAcessToken，认证器需要通过这个字段来筛选和过滤多余的KeyHandle
+  * KHAcessToken是认证器用来辨别请求的信息是否为可以信任的ASM所发的。这个字段在注册的过程会生成，会被加入KeyHandle中。然后在之后的认证过程中，ASM会再次生成这个字段（当然两次的字段是一样的），加入请求信息中去请求认证器。而认证器在认证的过程，会将注册过程的KeyHandle中的KHAcessToken来和新生成的KeyHandle进行比较，做筛选。这也就是认证器信任ASM的依据。
 
 
   <h2 id="2">Question 2</h2>
@@ -72,3 +72,6 @@
  <h2 id="11">Question 11</h2>:根据文档中，ASM在认证的过程中，会出现这样一句话：!![](4.1.9.png)意思是说，如果用户在认证之前，没有注册过这个认证器的话，那么，认证的过程是失败的，所以，我的理解应该是，每一个用户在使用一个新的认证器之前，都要去注册（比如A用户使用认证器A做支付宝的指纹支付，B用户使用认证器B做支付宝的支付，某天B用户需要用A用户的认证器来做支付，那么，如果B用户没有注册，则首次的支付应该是失败的）(注：这种情况应该是一因子认证器的)
  
 <h2 id="12">Question 12</h2>考虑上一个问题的情况，如果出现上一种情况，那么B用户在A 的认证器A上再次注册后，服务器上就会存在userName对应多个KeyId，因此，在B用户之后支付认证的过程中，服务器可能会发送多个keyIDs给客户端，让ASM去筛选那个KeyIDs才可能匹配。
+
+ <h2 id="13">Question 13</h2>这个问题要从userName的真正含义开始解释：</br>首先，userName的含义不是应用的userName，而是fido协议中的一种userName。也就是说，对一个应用而言，userName是只有一个的，但是对fido而言，一个user是可以有多个userName。</br>举例来说:比如支付宝钱包，对一个用户而言，只有一个username，但是这个用户在支付宝中使用fido协议的时候，是可以利用fido协议注册多个userName，这多个userName可能是相同的，也可能是不同的。</br>
+ 理解了userName的含义之后，我们可以理解为什么多个KeyIDs到ASM后会找出多个KeyHandle了：因为一个用户有可能注册了多个userName，也就生成了多个属于这个user的KeyHandle，根据KeyID的计算方式来看，确实有可能让KeyIDs找出多个KeyHandle。这就是说为什么会出现多个KeyHandle的原因
