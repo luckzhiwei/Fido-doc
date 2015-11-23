@@ -40,16 +40,16 @@
   <h2 id="1.1">1.GetInfo操作</h2>
   <h3 id="1.1">1.1 GetInfo操作的目的</h3>GetInfo操作的目的是为了获取认证器的详细信息，为什么要获取认证器的详细信息呢？因为一个设备上，可能集成了很多个认证器（比如指纹认证器，声音认证器，虹膜认证器等），fido协议规定，用户一次只能使用一种认证器来进行fido认证，那么，FidoClient需要根据服务器的policy来筛选服务器认可的认证器，并且让用户选择认证器，继而在之后数据传递操作中，告诉ASM选择哪种认证器来进行操作。
 
-  FidoClient每次在收到fidoServer的Request的信息之后，都会解析policy字段，具体操作流程如下所示：![](5.1.1.png)</br>我们可以看到，Fido Client会根据服务器的policy和获取本地认证器的信息来进行后续的步骤
+  FidoClient每次在收到fidoServer的Request的信息之后，都会解析policy字段，具体操作流程如下所示：![](/pic/server_policy.png)</br>我们可以看到，Fido Client会根据服务器的policy和获取本地认证器的信息来进行后续的步骤
  
   <h3 id="1.2">1.2 GetInfo操作具体步骤程以及数据演变的</h3>
-   1. <h5 id="1.2.1">Fido Client:</h5>首先FidoClient收到服务器的消息后，向 ASM发出获取Info的请求，这个请求体的格式为：</br>![](5.1.2.png)
+   1. <h5 id="1.2.1">Fido Client:</h5>首先FidoClient收到服务器的消息后，向 ASM发出获取Info的请求，这个请求体的格式为：</br>![](/pic/getinfo_fidoclient_step1.png)
    2. <h5 id="1.2.2">ASM:</h5>ASM收到请求消息后，做如下操作：
      * 1.首先列举出在该设备上且ASM支持的认证器
      * 2.向所有的认证器发送GetInfo指令
-     * 向认证器发送信息的结构截图所示：![](5.1.3.png)
+     * 向认证器发送信息的结构截图所示：![](/pic/getinfo_asm_step2.png)
    3. <h5 id="1.2.3">认证器:</h5>认证器收到GetInfo的请求后，GetInfo返回体，然后把认证器的详细信息返回给ASM
-   4. <h5 id="1.2.4">ASM:</h5>ASM收到信息后，基本不做过多处理，简单组织信息后，直接返回给FidoClient,返回的信息体如下![](5.1.5.png)</br>可以看到，返回信息的中含有，比如认证器的索引值，认证器的AAID，认证器的类型等等关键信息/
+   4. <h5 id="1.2.4">ASM:</h5>ASM收到信息后，基本不做过多处理，简单组织信息后，直接返回给FidoClient,返回的信息体如下![](/pic/getinfo_asm_step4.png)</br>可以看到，返回信息的中含有，比如认证器的索引值，认证器的AAID，认证器的类型等等关键信息/
    5. <h5 id="1.2.5">Fido Client:</h5>Fido Client收到信息之后，会将服务器的policy中的信息和认证器信息进行匹配，进行筛选符合服务器要求的认证器的工作，并让用户选择筛选过后的认证器来进行之后的注册，认证等操作。
 
  
@@ -57,8 +57,8 @@
    <h3 id="2.1">2.1 Register操作</h3>注册操作主要是为用户的认证操作做准备。在注册操作中，认证器会生成之后认证过程最关键的公私钥对，KeyHandle，KeyId等重要数据，为之后的认证过程能够认证用户身份做数据铺垫。
     
    <h3 id="2.2">2.2 Register操作具体流程以及数据演变
-     1. <h5 id="2.2.1">Fido Client:</h5> fidoClient首先会发送如下图所示的信息给Fido Server：![](5.1.6.png)
-     2. <h5 id="2.2.2">Fido Server</h5>Fido Server收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](5.1.7.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
+     1. <h5 id="2.2.1">Fido Client:</h5> fidoClient首先会发送如下图所示的信息给Fido Server：![](/pic/reg_fidoclient_step1.png)
+     2. <h5 id="2.2.2">Fido Server</h5>Fido Server收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](/pic/reg_fidoserver_step2.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
      3. <h5 id="2.2.3">3.Fido Client</h5> FidoClient 收到第前一步的服务器发送的信息后，做如下操作:
       
   * 1.用json解析upv中的major version和minor versionn是否1，0；
@@ -76,7 +76,7 @@
        * 3.
  *  5.形成FinalCallengeParams的内容，FinalCallengeParams就是appID 和challenge,facetId的json字符串的信息(Base64b编码形成的)计算方式如下 
       * FinalChallenge = base64url(serialize(utf8encode(fcp)))
- *  6.形成下图所示的信息，并将之发给ASM：![](5.1.8.png)</br>我们可以看到，包含的信息包括（认证器索引信息，操作类型，ASM版本号，请求参数[finalChallege,appID,userName]）
+ *  6.形成下图所示的信息，并将之发给ASM：![](/pic/reg_fidoclient_step3.png)</br>我们可以看到，包含的信息包括（认证器索引信息，操作类型，ASM版本号，请求参数[finalChallege,appID,userName]）
  
    
    <h5 id="2.2.4">4.ASM</h5>
@@ -91,7 +91,7 @@
       * 2.如果认证器为绑定类的认证器，则：</br>KHAccessToken |= ASMToken | PersonaID | CallerID(注：其中，ASMToken是ASM的一个特征数值，PersonID是操作系统用户名，CallerID是调用FidoClient的APP的包名)
       * 3.计算KHAccessToken的摘要数值，摘要算法是认证器内部的摘要算法:KHAccessToken=hash(KHAccessToken)
   5. 计算FinalChanllege的摘要数值（hash算法应该用认证器自己的hash算法）
-  6. 生成如下图所示的信息（TLV格式），并发送给认证器：![](5.1.10.png)
+  6. 生成如下图所示的信息（TLV格式），并发送给认证器：![](/pic/reg_asm_step4.png)
   可以看到上图的信息包括（认证器索引值，APPID，挑战的摘要值，注册的用户名，认证器的认证方式，KHAceesToken）
   
   <h5 id="2.2.5">5.认证器</h5> 认证器收到ASM的请求体之后，做如下操作： 
@@ -106,20 +106,20 @@
     * .将TAG_KEYHANDLE_ACCESS_TOKEN 加入RawKeyHandle对象
     * .如果是第一类认证器，KeyHandle还要加入用户名字（username）
    7. 对RawKeyHandle进行加密(加密方式由认证器决定）(AES加密算法)，形成KeyHandle.
-   8. 形成KRD的内容：（以TLV的形式）KRD的内容如下图所示：![](5.1.11.png)</br>可以看到，KRD的内容是[AAID,ASSERTION_INFO,FINAL_CHALLENGE,KEY_ID,COUNTERS,PUBLIC KEY]（注：如果是二因子非绑定类型的认证器，则用KeyHandle代替KeyId）
+   8. 形成KRD的内容：（以TLV的形式）KRD的内容如下图所示：![](reg_asm_step5_krd.png)</br>可以看到，KRD的内容是[AAID,ASSERTION_INFO,FINAL_CHALLENGE,KEY_ID,COUNTERS,PUBLIC KEY]（注：如果是二因子非绑定类型的认证器，则用KeyHandle代替KeyId）
    9. 按照协议规范组织KRD的内容
    10. 生成签名证书TAG_AUTHENTICATOR_ASSERTION的内容：
       * 生成KRD的摘要信息，并且用私钥对KRD进行签名。
       * 如果是第一类认证器，则会把keyHandle发给ASM保存，如果是二因子的认证器，则要直接把username和keyHanlde保存在认证器内部
       * 加入X509的证书信息（用于服务器从证书链中去认证这个认证器是合法的）
       * 按照TLV的形式组织TAG_AUTHENTICATOR_ASSERTION的内容
-   11. 将KRD和TAG_AUTHkeENTICATOR_ASSERTION按照TLV的形式返回给ASM，数据信息如下：![](5.1.12.png)
+   11. 将KRD和TAG_AUTHkeENTICATOR_ASSERTION按照TLV的形式返回给ASM，数据信息如下：![](/pic/reg_renzhengqi_step5.png)
    
  <h5 id="2.2.6">6.ASM</h5>ASM收到认证返回的信息之后，做如下操作：
   
  1. 解析TAG_AUTHENTICATOR_ASSERTION消息体，提取出KEY_ID的的数值
  2. 如果认证器是绑定类型的认证器，则将CallerID,AppID,TAG_KEYHANDLE,TAG_KEYID以及当前系统时间等数据一同存入ASM的数据库中。
- 3. 构造向FidoClient向上传递的信息体，如下图所示![](5.1.13.png)
+ 3. 构造向FidoClient向上传递的信息体，如下图所示![](/pic/reg_asm_step6.png)
  
  <h5 id="2.2.7">7.Fido Client</h5>Fido Client收到ASM的返回的消息体之后，做如下处理：</br>
    
@@ -128,7 +128,7 @@
   * 构造头部信息：就是服务器一开始发过来的头部信息header[upv,severData,op]
   * 将一开始生成的FinalChallenge加入到fcParams的内容中。
   * 将ASM返回的消息体中的ASSERTION加入RegisterOut的内容中。
-  * 形成如下图所示的消息体：![](5.1.14.png)
+  * 形成如下图所示的消息体：![](/pic/reg_fidoclient_step7.png)
   * 将消息体发送给Fido Server
 
  <h5 id="2.2.8">8.Fido Sever</h5>FidoSever做后续处理，比如存储KeyID，验证签名是否正确等等
@@ -139,7 +139,7 @@
    <h3 id="3.2">3.2 Authenticate操作具体流程以及数据演变</h3>认证过程中每一步的操作以及每一层做的具体的事情如下所示
    <h5 id="3.2.1">1.Fido Client</h5>Fido Client向服务器发送验证的请求，请求内容包含userName。
    <h5 id="3.2.2">2.Fido Server</h5>Fido Server组织信息如下图所示（由于本文档主要面向客户端，因此server如何组织的信息，这里略去）
-   ![](5.2.2.png)</br>可以看到，fidosever发送的信息中，含有header[upv,severData,op],challenge,policy[accpeted[keyid,aaid],disallow],其中，keyID和AAID是在注册过程认证器留在服务器上的信息（注：keyID和AAID的组合一定是唯一的）
+   ![](/pic/auth_fidoserver_step2.png)</br>可以看到，fidosever发送的信息中，含有header[upv,severData,op],challenge,policy[accpeted[keyid,aaid],disallow],其中，keyID和AAID是在注册过程认证器留在服务器上的信息（注：keyID和AAID的组合一定是唯一的）
    <h5 id="3.2.3">3.Fido Client</h5>FidoClient收到FidoServer的消息后，作如下操作：
     
    * 用json解析信息服务器的报文体
@@ -158,7 +158,7 @@
       
    * 找到匹配的认证器后，让用户从中选择一个认证器(也就是找到authenticatorIndex)。
    * 形成FinalChallenge的信息，计算方法和注册时候的是一样的。
-   * 形成如下图的格式的请求数据，交给ASM.![](5.1.8.png)
+   * 形成如下图的格式的请求数据，交给ASM.![](/pic/auth_fidocleint_step3.png)
        
    <h5 id="3.2.4">4.ASM</h5>ASM收到信息后，做如下的操作：
 
@@ -174,7 +174,7 @@
     *  如果为绑定类型的认证器，则通过AppId，KeyId在ASM的数据库中去查找对应的KeyHandle
     *  如果为非绑定类型的认证器，则将keyID放入KeyHandle的字段中去（远程认证器是在注册时候将keyHanlde存储在内部的）      
   
- 8.形成如下的信息格式发送给验证器 ![](5.1.10.png)
+ 8.形成如下的信息格式发送给验证器 ![](/pic/auth_asm_step4.png)
         
   <h5 id="3.2.5">5.认证器</h5>认证器收到请求后，做如下的操作：
    
@@ -193,7 +193,7 @@
     * 构造ASSERTION的信息
        * 形成证书信息（证书信息包括：AAID，CHALLENGE,COUNTERS等）;COUNTERS是签名计数器，每签名一次，则计数器的数值自增，这个字段主要用于防止认证器被克隆。
        * 用私钥签名证书的信息(私钥在KeyHandle中存放，拿到KeyHandle已经做了解密处理)
-    * 形成如下图所示的信息体，然后返回ASM![](5.2.7.png)
+    * 形成如下图所示的信息体，然后返回ASM![](/pic/auth_renzhengqi_step5.png)
      
         
    <h5 id="3.2.6">6.ASM</h5>ASM收到认证器返回的消息之后，做如下的操作
@@ -204,14 +204,14 @@
      * 3.如果剩下的元组的个数都还是大于1（也就是有userName不同的多个元组）则让用户选择一个username，从而找到唯一一个keyHandle
      * 4.用户选择完成之后，重复[4.ASM](#3.2.4)的步骤中的第8步再次请求ASM
   * 2.如果上述条件不满足（也就是认证器已经成功完成认证了）则形成如下图所示数据，向FidoClient传递。
-   ![](5.2.8.png)        
+   ![](/pic/auth_asm_step6.png)        
    
    <h5 id="3.2.7">7.FidoClient</h5>FidoClient收到ASM返回的数据后，做如下操作：
 
    * 形成Header的信息(Header信息就是fidosever开始请求的header的信息)
    * 形成将FinalChallenge的信息加入返回消息体中
    * 将ASM的信息也加入返回的消息中
-   * 形成如下图所示的消息体:![](5.2.9.png)
+   * 形成如下图所示的消息体:![](/pic/auth_renzhengqi_step7.png)
    * 发送给fidoserver
 
    <h5 id="3.2.8">8.FidoServer</h5>FidoSever收到消息后，做签名计数器验证，挑战的签名验证等一系列的工作
