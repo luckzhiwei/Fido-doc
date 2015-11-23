@@ -72,7 +72,11 @@
 
 
  <h2 id="3.1">3.Fido Client</h2>
-   <h3 id="3.1"> 3.1 fido client 概述 </h3>fido client的是一个对外的API 接口，主要告诉了外部的应用程序应该怎么样去使用fido模型，将fido模型整个作为一个软件的API。同时，Fido Client也会对Fido Sever的数据，进行简单的处理，形成请求ASM规定的的数据类型后，发送给ASM进行调用。 
+   <h3 id="3.1"> 3.1 fido client 概述 </h3>fido client的是一个对外的API 接口，主要告诉了外部的应用程序应该怎么样去使用fido模型，将fido模型整个作为一个软件的API。同时，Fido Client也会对Fido Sever的数据，进行简单的处理，形成请求ASM规定的的数据类型后，发送给ASM进行调用。 FidoClient的功能主要包括以下几点：</br>
+   
+   * FidoClient 提供了应用层的API给其他应用程序调用。
+   * 选择出可以信任的认证器来进行Fido的操作过程。 
+
   <h3 id="3.2"> 3.2 fido client API for android</h3>关于Fido Client API的Android 版本的使用，可以参考这个链接[fido android API](fido-uaf-client-api-transport-v1.0-ps-20141208.html#android-intent-api.html)
    <h3 id="3.3">3.3 fido Client 同ASM交互</h3>Fido Client 主要接收到服务器的request信息，然后主要进行以下几点操作：
      
@@ -85,7 +89,10 @@
    
    
   <h2 id="4.1">4.ASM</h2>
-  <h3 id="4.1">4.1 ASM 概述</h3>ASM是各种各样的认证器在软件上的统一。ASM主要负责了接受与FidoClient沟通，进行来自FidoClient的数据的处理，并引起认证器的响应，同时，接受来自认证器的信息，并对认证器产生的关键数据做存储和查询。ASM起着连接FidoClient，统一不同类型的认证器的作用，并且能对不同类型的认证器进行交互，调用。
+  <h3 id="4.1">4.1 ASM 概述</h3>ASM是各种各样的认证器在软件上的统一。ASM主要负责了接受与FidoClient沟通，进行来自FidoClient的数据的处理，并引起认证器的响应，同时，接受来自认证器的信息，并对认证器产生的关键数据做存储和查询。ASM起着连接FidoClient，统一不同类型的认证器的作用，并且能对不同类型的认证器进行交互，调用。ASM的作用包括以下几点:</br>
+
+  * 统一了不同的认证器，比如指纹，声音，虹膜认证器等不同的认证器类型，提供给一种统一的通讯方式给FidoClient调用
+  * 作为认证器在软件层次上的代理，让FidoClient可以动态加载认证器。
   
   <h3 id="4.2">4.2 ASM 同fido Client交互</h3> ASM同FidoClient的交互主要在以下几个方面：
     
@@ -100,7 +107,11 @@
   *  3.对认证器返回的部分信息做提取和存储：若认证器是绑定类认证器，则存储KeyHandle和KeyId到认证器的数据库中，并在之后做查询，提取KeyHandle的功能。
   
   <h2 id="5.1">5.认证器</h2>
-   <h3 id="5.1">5.1 认证器概述</h3>认证器是根据用户注册的人体特征来对用户进行身份识别的硬件机器，这里的人体特征包括指纹，声音，虹膜等各种各样的信息，当然也就对应各种各样的认证器，比如指纹认证器，声音认证器，虹膜认证器。
+   <h3 id="5.1">5.1 认证器概述</h3>认证器是根据用户注册的人体特征来对用户进行身份识别的硬件机器，这里的人体特征包括指纹，声音，虹膜等各种各样的信息，当然也就对应各种各样的认证器，比如指纹认证器，声音认证器，虹膜认证器。认证器的主要功能包括以下几点</br>
+   
+   * 认证器通过用户的生物信息来验证用户身份的可靠性。
+   * 形成FidoServer所需要的数据信息。
+   * 保证自身是可以被FidoServer所信任的。
    <h3 id="5.2">5.2 认证器和ASM的关系</h3>认证器和ASM一个实现了fido协议的硬件端。一个实现了fido的协议硬件向软件过渡的桥梁。ASM和认证器的关系主要体现在：
 
 * 1.认证器通过ASM进行数据的交互，ASM将数据（比如KeyHandle，KHAccessToken等）交给认证器做逻辑处理，同时，认证器也将重要的信息交给ASM（KeyID，KeyHandle等等），同也有向fidoSever的交互的信息（签名信息，挑战信息，公钥等），也需要通过ASM来向上传递。
