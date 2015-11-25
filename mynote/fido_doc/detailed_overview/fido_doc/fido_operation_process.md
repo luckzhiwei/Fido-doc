@@ -71,9 +71,11 @@
        * 找到匹配policy.accepted中包含的认证器.
        * 引导用户使用匹配成功的认证器（让用户选择匹配成功的认证器）
  *  4.根据AppID来获取FacetId，具体的操作如下：
-       * 1.
-       * 2.
-       * 3.
+ 
+    *  如果AppId并非是Https开头的来链接，而且符合facetID的规范，那么，AppId也就是所谓的faceId，FidoClient继续后续的操作
+   *  如果AppId为空，则客户端需要用facetId来
+   *  如果AppId为https开头的URL，则根据AppId确定FacetId
+      
  *  5.形成FinalCallengeParams的内容，FinalCallengeParams就是appID 和challenge,facetId的json字符串的信息(Base64b编码形成的)计算方式如下 
       * FinalChallenge = base64url(serialize(utf8encode(fcp)))
  *  6.形成下图所示的信息，并将之发给ASM：![](/pic/reg_fidoclient_step3.png)</br>我们可以看到，包含的信息包括（认证器索引信息，操作类型，ASM版本号，请求参数[finalChallege,appID,userName]）
@@ -144,10 +146,11 @@
     
    * 用json解析信息服务器的报文体
    * 根据AppID获取到faceID：
-
-       *  如果
-       *  如果
-       *  如果
+   
+       *  如果AppId并非是Https开头的来链接，而且符合facetID的规范，那么，AppId也就是所谓的faceId，FidoClient继续后续的操作
+       *  如果AppId为空，则客户端需要用facetId来
+       *  如果AppId为https开头的URL，则根据AppId去可信任的网站来获取FacetId。
+   </br>上述根据AppId获取facetId的过程，总结起来就是：如果AppId是一个可信的链接源，则根据AppId获取facetId。否则，AppId就是facetId的原型。
       
    * 根据policy的信息，筛选出符合的认证器:（筛选过程其实和注册的过程是基本一样的）
       * 根据经常使用的认证器信息来选择policy.accpted的中的组合信息。
