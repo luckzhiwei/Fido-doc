@@ -1,7 +1,7 @@
 # fido 操作流程阐述 
 
 
-  1. ## [GetInfo操作](#1.1)
+ 1. ## [GetInfo操作](#1.1)
     1. [GetInfo操作的目的](#1.1)
     2. [GetInfo操作具体步骤程以及数据演变](#1.2)
        * [1.Fido Client](#1.2.1)
@@ -56,10 +56,11 @@
  <h2 id="2.1">2.Register操作</h2>
    <h3 id="2.1">2.1 Register操作</h3>注册操作主要是为用户的认证操作做准备。在注册操作中，认证器会生成之后认证过程最关键的公私钥对，KeyHandle，KeyId等重要数据，为之后的认证过程能够认证用户身份做数据铺垫。
     
-   <h3 id="2.2">2.2 Register操作具体流程以及数据演变
-     1. <h5 id="2.2.1">Fido Client:</h5> fidoClient首先会发送如下图所示的信息给Fido Server：![](/pic/reg_fidoclient_step1.png)
-     2. <h5 id="2.2.2">Fido Server</h5>Fido Server收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](/pic/reg_fidoserver_step2.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
-     3. <h5 id="2.2.3">3.Fido Client</h5> FidoClient 收到第前一步的服务器发送的信息后，做如下操作:
+   <h3 id="2.2">2.2 Register操作具体流程以及数据演变</h3></br>
+
+ 1. <h5 id="2.2.1">1.Fido Client:</h5> fidoClient首先会发送如下图所示的信息给Fido Server：![](/pic/reg_fidoclient_step1.png)
+ 2. <h5 id="2.2.2">Fido Server</h5>Fido Server收到请求后，组织如下数据信息，发送给Fido Client（注：由于本篇文档是主要阐述关于客户端的，因此，服务器如何组织信息，本文档这里不做解释）![](/pic/reg_fidoserver_step2.png)</br>我们可以看到，服务器的信息包含：header[upv,severData,op],policy[accpted,disallow],AppId,challenge的信息.
+ 3. <h5 id="2.2.3">Fido Client</h5> FidoClient 收到第前一步的服务器发送的信息后，做如下操作:
       
   * 1.用json解析upv中的major version和minor versionn是否1，0；
   * 2.用json解析服务器发送的全部信息
@@ -89,7 +90,7 @@
   
   3. 如果认证器中并未含有用户的身份特征信息，则要求认证器现在录入用户身份特征信息。
   4. 生成KeyHandleAccessToken的数值
-      * 1.KeyAccessToken=AppID
+      * 1.KeyHandleAccessToken=AppID
       * 2.如果认证器为绑定类的认证器，则：</br>KHAccessToken |= ASMToken | PersonaID | CallerID(注：其中，ASMToken是ASM的一个特征数值，PersonID是操作系统用户名，CallerID是调用FidoClient的APP的包名)
       * 3.计算KHAccessToken的摘要数值，摘要算法是认证器内部的摘要算法:KHAccessToken=hash(KHAccessToken)
   5. 计算FinalChanllege的摘要数值（hash算法应该用认证器自己的hash算法）
@@ -106,7 +107,7 @@
    6. 生成RawKeyHandle的数据:
     * .将私钥加入RawKeyHandle对象
     * .将TAG_KEYHANDLE_ACCESS_TOKEN 加入RawKeyHandle对象
-    * .如果是第一类认证器，KeyHandle还要加入用户名字（username）
+    * .如果是一因子认证器，KeyHandle还要加入用户名字（username）
    7. 对RawKeyHandle进行加密(加密方式由认证器决定）(AES加密算法)，形成KeyHandle.
    8. 形成KRD的内容：（以TLV的形式）KRD的内容如下图所示：![](reg_asm_step5_krd.png)</br>可以看到，KRD的内容是[AAID,ASSERTION_INFO,FINAL_CHALLENGE,KEY_ID,COUNTERS,PUBLIC KEY]（注：如果是二因子非绑定类型的认证器，则用KeyHandle代替KeyId）
    9. 按照协议规范组织KRD的内容
