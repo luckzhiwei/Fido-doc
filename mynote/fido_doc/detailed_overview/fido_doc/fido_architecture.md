@@ -23,7 +23,7 @@
   </br></br>
 
   <h2>1.总体架构</h2>
-   <h3 id="1.1">1.1总体架构</h3>fido协议基于传统的client-sever结构，如下图所示:从服务器端分为至上而下分为WebSever，FidoServer，FidometeDataSever，客户端至上而下分为Fido Client，ASM，Fido认证器。![](/pic/fido_architecture_pic.png)</br>接下来依次解释每一层的作用：
+   <h3 id="1.1">1.1总体架构</h3>fido协议基于传统的client-sever结构，如下图所示:从服务器端分为至上而下分为WebSever，FidoServer，FidometeDataSever，客户端至上而下分为Fido Client，ASM，Fido认证器。![](pic/fido_architecture_pic.png)</br>接下来依次解释每一层的作用：
    
    * WebSever：一个传统的web服务器层，主要进行负责对监听client端的请求，并将数据交给fido Sever，同时会将fido Server的数据返沪给client端，封装了fido sever，让fido协议能够在传统的web形式得以实现
    
@@ -31,11 +31,11 @@
    
    * FidoMetaDataSever：一个fido官方的安全性认证的服务器，比如检验fido认证器的类型是否正确；认证fido认证器包含的证书是否正确。用作fido官方可信的检验。
    
-* FidoClient:Fido 客户端，将整个fido包装成为一个可以调用的API，提供接口给外部的（浏览器/android/iOS）应用进行调用，同时处理服务器的发来的数据，和ASM进行数据传递。![](/pic/fido_client_pic.png)
+* FidoClient:Fido 客户端，将整个fido包装成为一个可以调用的API，提供接口给外部的（浏览器/android/iOS）应用进行调用，同时处理服务器的发来的数据，和ASM进行数据传递。![](pic/fido_client_pic.png)
    p
-   * ASM:同认证器协同交互的软件层,是认证器在软件层次的一个抽象，完成了统一各种各样的认证器在软件层次上的统一。同时对认证器的部分数据做存储。![](/pic/asm_pic.png)
+   * ASM:同认证器协同交互的软件层,是认证器在软件层次的一个抽象，完成了统一各种各样的认证器在软件层次上的统一。同时对认证器的部分数据做存储。![](pic/asm_pic.png)
      
-   * 认证器：用于验证用户的身份，生成fido认证最关键的公钥和私钥，并且通过私钥来对服务器的挑战进行签名，是服务器认证用户的身份和fido协议最底层的一个层次，也是实现fido协议最关键的一个层次。![](/pic/renzhengqi_pic.png)
+   * 认证器：用于验证用户的身份，生成fido认证最关键的公钥和私钥，并且通过私钥来对服务器的挑战进行签名，是服务器认证用户的身份和fido协议最底层的一个层次，也是实现fido协议最关键的一个层次。![](pic/renzhengqi_pic.png)
    
  <h3 id="1.2">1.2总体流程阐述</h3> 
 1.  fido获取信息的过程：
@@ -51,7 +51,7 @@
      * ASM拿到认证器的信息之后，根据认证器的类型，决定是否存储KeyId和KeyHandle，然后将认证器返回的信息加以封装返回给fido client
      * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息发送给fido服务器
      * fido服务器收到信息后，首先验证证书有效性，组织签名数据，使用对应的公钥做验签操作，验签成功后，告诉客户端注册成功。
-     * 大致的操作图如图所示：![](/pic/register_all.png)
+     * 大致的操作图如图所示：![](pic/register_all.png)
 2.  fido认证的过程：
       * 首先，客户端请求fidoserver进行验证的过程
      * fido Sever收到客户端的请求之后，会在生成一系列的认证有关请求数据（包括KeyID）
@@ -61,7 +61,7 @@
      * ASM拿到认证器的信息之后，做一些简单的封装，交给Fido Client。
      * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息发送给fido服务器。
      * fido服务器收到信息后，织签名数据，使用对应的公钥做验签操作，若验签成功，则告诉客户端验证过程成功。
-     *  大致的操作图如图所示：![](/pic/renzheng_all.png)
+     *  大致的操作图如图所示：![](pic/renzheng_all.png)
  <h2 id="2.1">2.Fido Server</h2>
    <h3 id="2.1">Fido Server</h3>由于本文档主要是讲解fido客户端的，所以，fido服务器这里简单说明下功能：
     
