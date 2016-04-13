@@ -90,7 +90,7 @@
   
   3. 如果认证器中并未含有用户的身份特征信息，则要求认证器现在录入用户身份特征信息。
   4. 生成KeyHandleAccessToken的数值
-      * 1.KeyHandleAccessToken=AppID
+      * 1.KeyHandleAccessToken=AppID（加入APPid的原因是为了防止不同的应用程序调用Fido ASM的API，会引起数据的混乱）
       * 2.如果认证器为绑定类的认证器，则：</br>KHAccessToken |= ASMToken | PersonaID | CallerID(注：其中，ASMToken是ASM的一个特征数值，PersonID是操作系统用户名，CallerID是调用FidoClient的APP的包名)
       * 3.计算KHAccessToken的摘要数值，摘要算法是认证器内部的摘要算法:KHAccessToken=hash(KHAccessToken)
   5. 计算FinalChanllege的摘要数值（hash算法应该用认证器自己的hash算法）
@@ -100,13 +100,13 @@
   <h5 id="2.2.5">5.认证器</h5> 认证器收到ASM的请求体之后，做如下操作： 
  
    1. 如果APPID的字段不为空，则再次更新KeyAceessToken的数值 KHAccessToken=hash(KHAccessToken | Command.TAG_APPID)
-   2. 如果认证器中已经含有了用户的身份特征信息（比如用户的指纹，声音等类型的信息），认证再次认证用户身份的合法性。如果TAG_USERVERIFY_TOKEN字段不为空，则验证TAG_USERVERIFY_TOKEN字段的合法性；如果认证失败，则返回拒绝的响应状态码。  
+   2. 如果认证器中已经含有了用户的身份特征信息（比如用户的指纹，声音等类型的信息），认证再次认证用户身份的合法性。如果TAG USERVERIFY TOKEN字段不为空，则验证TAG USERVERIFY TOKEN字段的合法性；如果认证失败，则返回拒绝的响应状态码。  
    3. 如果认证器中没有没用用户的信息，则当场让认证器记录用户的身份特征信息，如果用户取消记录，则返回取消的状态码，如果记录失败，则返回拒绝的状态代码。
    4. 确保TAG_ATTESTATION_TYPE（认证方式） 是认证器支持的类型，否则返回不支持的响应的代码
    5. 以上操作都没有问题之后，产生一个密钥对(公私钥)
    6. 生成RawKeyHandle的数据:
     * .将私钥加入RawKeyHandle对象
-    * .将TAG_KEYHANDLE_ACCESS_TOKEN 加入RawKeyHandle对象
+    * .将Keyhandle_access_token 加入RawKeyHandle对象
     * .如果是一因子认证器，KeyHandle还要加入用户名字（username）
    7. 对RawKeyHandle进行加密(加密方式由认证器决定）(AES加密算法)，形成KeyHandle.
    8. 形成KRD的内容：（以TLV的形式）KRD的内容如下图所示：![](pic/reg_asm_step5_krd.png)</br>可以看到，KRD的内容是[AAID,ASSERTION_INFO,FINAL_CHALLENGE,KEY_ID,COUNTERS,PUBLIC KEY]（注：如果是二因子非绑定类型的认证器，则用KeyHandle代替KeyId）
@@ -120,8 +120,8 @@
    
  <h5 id="2.2.6">6.ASM</h5>ASM收到认证返回的信息之后，做如下操作：
   
- 1. 解析TAG_AUTHENTICATOR_ASSERTION消息体，提取出KEY_ID的的数值
- 2. 如果认证器是绑定类型的认证器，则将CallerID,AppID,TAG_KEYHANDLE,TAG_KEYID以及当前系统时间等数据一同存入ASM的数据库中。
+ 1. 解析TAG AUTHENTICATOR ASSERTION消息体，提取出KEY_ID的的数值
+ 2. 如果认证器是绑定类型的认证器，则将CallerID,AppID,Keyhandle,keyId以及当前系统时间等数据一同存入ASM的数据库中。
  3. 构造向FidoClient向上传递的信息体，如下图所示![](pic/reg_asm_step6.png)
  
  <h5 id="2.2.7">7.Fido Client</h5>Fido Client收到ASM的返回的消息体之后，做如下处理：</br>
@@ -188,7 +188,7 @@
      * 如果用户有取消操作的动作，如果有，则返回取消操作的状态码
   3. 如果用户没有注册，则返回没有注册的状态码
   4. 用验证器的内部的加密算法（AES算法）解密KeyHandle的数值
-  5. 用KeyAcessToken的数值来过滤第4步找到的所有的KeyHandle，比较两者的摘要是否一致。RawKeyHandle.KHAccessToken == Command.KHAccessToken（这一步骤主要用于认证器信任消息确实为ASM所发）
+  5. 用KeyAcessToken的数值来过滤第4步找到的所有的KeyHandle，比较两者的摘要是否一致。RawKeyHandle.KHAccessToken == Command.KHAccessToken（这一步骤主要用于认证器信任消息确实为ASM所发,同时区分不同的应用程序存储的KeyId）
   6. 经过过滤之后，如果KeyHandle的个数为零，则返回拒绝验证的状态码(说明了这次请求的信息不可信)
   7. 如果剩下的KeyHandle的个数的大于1
     * 如果为二因子的认证器，则直接挑选第一个keyHnadle然后进入下一步

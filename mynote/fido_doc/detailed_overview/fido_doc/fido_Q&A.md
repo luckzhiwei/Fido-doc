@@ -10,9 +10,10 @@
   *   [AppId用什么作用?和facetID的区别和联系是什么?](#8)
   *   [UserVerificationToken 字段的作用是什么？在什么时候生成？](#9)
   *   [FinalChanlleageParams的作用是什么？](#10)
-  *   [不同的用户使用同一个认证器，协议如何解决这个问题？](#11)
+  *   [不同的用户使用同一款APP，例如支付宝，使用Fido做支付认证，如何区分每个用户注册的fido的username](#11)
   *   [为什么会在认证的过程服务器中出现多个KeyIDs给客户端？](#12)
   *   [为什么会在认证过程中出现：通过KeyIDs查找KeyHandle的后，会有多个KeyHandle?](#13)
+  *   [](#14)
 
 
 
@@ -69,9 +70,16 @@
   
  <h2 id="10">Question 10</h2>用于服务器验证客户是否将挑战签名成功的一个关键因素。服务器收到客户端的assertion字段之后，会解析到FinalChanlleageParams 的摘要信息(这个信息是认证器已经做好了的)，然后会通过相同的算法再次计算一次摘要信息，比对两次计算的摘要信息是否一致，如果不一致，则用户签名挑战失败，如果一致，则表示用户认证成功。</br>认证器的产生的私钥信息，主要用于服务器认证信息是否为客户端所发的。
 
- <h2 id="11">Question 11</h2>:根据文档中，ASM在认证的过程中，会出现这样一句话：!![](pic/question11.png)意思是说，如果用户在认证之前，没有注册过这个认证器的话，那么，认证的过程是失败的，所以，我的理解应该是，每一个用户在使用一个新的认证器之前，都要去注册（比如A用户使用认证器A做支付宝的指纹支付，B用户使用认证器B做支付宝的支付，某天B用户需要用A用户的认证器来做支付，那么，如果B用户没有注册，则首次的支付应该是失败的）(注：这种情况应该是一因子认证器的)
+ <h2 id="11">Question 11</h2>:首先，我们要理解到App中的username和FidoUAF协议中的username是什么关系?</br>
+ Fido UAF协议中，每次注册一个username，其实说白了的逻辑，就是想ASM注册一个username，所以，APP中的username和FidoUAF协议中的username是一对多的关系。一个app中的username可以利用这个身份注册多个Fido uaf中的username。</br>
+ 那么，现在我们回到这个问题，不用的用户利用同一款APP，使用fido认证，会出现什么状况呢？这就是App的username和Fido Uaf的username需要靠什么联系？KeyId，不同的用户，会有不用的KeyIds。
+ 所以，如果两个用户在这种情景下，A用户在做认证，服务器会把A用户在这个认证器上注册过的keyIDs发送过来，找到A用户对应的usernames。如果突然切换到了B用户，如果B用户没有进行过注册这个操作，那么，在认证的时候，是没有keyIds被发送过来的，因此，认证是会失败的，如果有，那么，服务器会把B用户之前注册过的KeyIds拿到，发给认证器做认证。
  
-<h2 id="12">Question 12</h2>考虑上一个问题的情况，如果出现上一种情况，那么B用户在A 的认证器A上再次注册后，服务器上就会存在userName对应多个KeyId，因此，在B用户之后支付认证的过程中，服务器可能会发送多个keyIDs给客户端，让ASM去筛选那个KeyIDs才可能匹配。
+ 
+<h2 id="12">Question 12</h2>这种情况其实很复杂，我们在Question11中理解到了App中的username和fido uaf协议中的username是依靠KeyIds来关联的之后，那么，思考以下几种应用情景关系：</br>
+
+ 1. 对于同一个APP，一个username使用fido协议注册了多次如何办？
+ 2. 一个用户，在A手机上进行了fido UAF 协议的注册，之后在B手机上，进行了Fido UAF协议的注册，那么，现在该用户在B手机上进行认证呢？
 
  <h2 id="13">Question 13</h2>这个问题要从userName的真正含义开始解释：</br>首先，userName的含义不是应用的userName，而是fido协议中的一种userName。也就是说，对一个应用而言，userName是只有一个的，但是对fido而言，一个user是可以有多个userName。</br>举例来说:比如支付宝钱包，对一个用户而言，只有一个username，但是这个用户在支付宝中使用fido协议的时候，是可以利用fido协议注册多个userName，这多个userName可能是相同的，也可能是不同的。</br>
  理解了userName的含义之后，我们可以理解为什么多个KeyIDs到ASM后会找出多个KeyHandle了：因为一个用户有可能注册了多个userName，也就生成了多个属于这个user的KeyHandle，根据KeyID的计算方式来看，确实有可能让KeyIDs找出多个KeyHandle。这就是说为什么会出现多个KeyHandle的原因
