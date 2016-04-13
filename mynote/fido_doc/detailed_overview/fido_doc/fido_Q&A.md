@@ -81,5 +81,7 @@
  1. 对于同一个APP，一个username使用fido协议注册了多次如何办？
  2. 一个用户，在A手机上进行了fido UAF 协议的注册，之后在B手机上，进行了Fido UAF协议的注册，那么，现在该用户在B手机上进行认证呢？
 
+ 以上几种情况，一个APP中的username，对应了多个fido协议中的username，那么，服务器会在每次认证过程中，把这个APP用户对应的fido中keyId发送过来，那么，这样的话，就会出现多个keyId。
+
  <h2 id="13">Question 13</h2>这个问题要从userName的真正含义开始解释：</br>首先，userName的含义不是应用的userName，而是fido协议中的一种userName。也就是说，对一个应用而言，userName是只有一个的，但是对fido而言，一个user是可以有多个userName。</br>举例来说:比如支付宝钱包，对一个用户而言，只有一个username，但是这个用户在支付宝中使用fido协议的时候，是可以利用fido协议注册多个userName，这多个userName可能是相同的，也可能是不同的。</br>
  理解了userName的含义之后，我们可以理解为什么多个KeyIDs到ASM后会找出多个KeyHandle了：因为一个用户有可能注册了多个userName，也就生成了多个属于这个user的KeyHandle，根据KeyID的计算方式来看，确实有可能让KeyIDs找出多个KeyHandle。这就是说为什么会出现多个KeyHandle的原因
