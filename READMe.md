@@ -19,7 +19,7 @@
       1. [3.1  GetInfo 操作流程](mynote/fido_doc/detailed_overview/fido_doc/fido_operation_process.md#1.1)
       2. [3.2  Register 操作流程](mynote/fido_doc/detailed_overview/fido_doc/fido_operation_process.md#2.1)
       3. [3.3  Authenticate 操作流程](mynote/fido_doc/detailed_overview/fido_doc/fido_operation_process.md#3.1)
-      4. 3.4  DeRegeister 操作流程
+      4. [3.4  DeRegeister 操作流程](mynote/fido_doc/detailed_overview/fido_doc/fido_operation_process.md#4.1)
    
   4. ## [Fido 中的 Q & A](mynote/fido_doc/detailed_overviewfido_doc/fido_Q&A.md)
   

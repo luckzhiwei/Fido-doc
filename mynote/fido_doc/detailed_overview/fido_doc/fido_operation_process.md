@@ -236,18 +236,18 @@
    <h3 id="4.2">Deregistration 操作具体流程以及数据演变</h3>
    <h5 id="4.2.1">1.Android client app</h5>
    android 客户端，同认证过程的第一步一样，会把客户的身份识别信息发送给服务器，以便让服务器来进行用户身份的绑定
-   <h5 id="4.2.2">2.Fido Server</h5>Fido server收到请求之后，构造如下图的数据：![](/pic/dereg_fido_server.png)服务器在构造这些数据的同时，会将注册过程中，用户对应产生的keyId和aaid从服务器的数据库中删除。
+   <h5 id="4.2.2">2.Fido Server</h5>Fido server收到请求之后，构造如下图的数据：![](pic/dereg_fido_server.png)服务器在构造这些数据的同时，会将注册过程中，用户对应产生的keyId和aaid从服务器的数据库中删除。
    <h5 id="4.2.3">3.Fido Client</h5>Fido Client收到请求后，做如下操作：
 
    1. 验证UPV的字段是否合法（这和注册，认证过程的第一步是一样的）
    2. 将AppId和facetId进行互换（这也和注册，认证过程的步骤是一样的）
-   3. 构造如下图所示的请求体来进行ASM的请求。![](/pic/dereg_fido_client.png)
+   3. 构造如下图所示的请求体来进行ASM的请求。![](pic/dereg_fido_client.png)
    <h5 id="4.2.3">4.ASM</h5>ASM受到请求后，做如下操作：
 
    1. 根据authenticatorIndex进行来定位执行操作的认证器
    2. 由于此处认证为第一类认证器，所以，注册过程中所含有的appId和KeyId是放在ASM的中的数据库中的。这时，ASM根据AppId和KeyId来数据库中对应的元组，然后进行删除。
    3. 构造KHAccessToken的数值，构造方法同之前的注册，认证过程是一样的。
-   4. 形成如下图的数据格式来请求认证器![](/pic/dereg_asm.png)
+   4. 形成如下图的数据格式来请求认证器![](pic/dereg_asm.png)
    <h5 id="4.2.4">4.认证器</h5>由于此处的认证器是第一类绑定型的认证器，认证器做的步骤很简单：
 
    1. 更新KeyAcessToken的数值（计算方法和注册过程是一样的）
