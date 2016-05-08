@@ -14,17 +14,20 @@
  * [RequestType](#11)
  * [KeyHandleAccessToken](#12)
  * [CallerId](#13)
- * [PersonaID](#14)
+ * [PersonaId](#14)
  * [RawKeyHandle](#15)
  * [KeyHandle](#16)
  * [KeyId](#17)
  * [KeyRegistrationData (KRD)](#18)
  * [User Verification Token](#19)
- 
+ * [ASMToken](#20)
+ * [PersonaId](#21)
+ * [Server Challenge](#22)
+ * [Sign Counter](#23)
 
 
   <h3 id="1">Authenticator Policy</h3>
-   服务器的策略字段：一般由一段json字符串组成，规定了在本次操作中，可以使用哪些认证器，不可以使用哪些认证器。用于FidoClient进行认证器的筛选
+   服务器的策略字段：一般由一段json字符串组成，规定了在本次操作中，可以使用哪些认证器，不可以使用哪些认证器。用于Fido Client进行认证器的筛选
    
   <h3 id="2">AuthenticatorIndex</h3>
   认证器的索引值，用于ASM寻找和定位认证器。有点类似于数组的索引值
@@ -50,9 +53,9 @@
   <h3 id="11">RequestType</h3>FidoClient请求ASM的操作类型:一般有获取信息，注册，认证，注销四种类型
   
      
-  <h3 id="12">KeyHandleAccessToken</h3>一个作为认证器信任ASM的依据的字段，代表认证器收到的来自ASM的信息是可信的。
+  <h3 id="12">KeyHandleAccessToken（KHAccessToken）</h3>一个作为认证器信任ASM的依据的字段，代表认证器收到的来自ASM的信息是可信的。KeyHandleAccessToken 一般由AppId，ASMToken,CallerId,PersonId四个字段组成。
    
-  <h3 id="13">CallerId</h3>调用FidoClient的调用者的ID：比如：对android系统而言：caller就是APP的apk的签名的摘要
+  <h3 id="13">CallerId</h3> 使用Fido Client的提供的API的第三方APP的Id：比如：对android系统而言：CallerId就是APP的apk的签名的。
   
   <h3 id="14">PersonaID</h3>PersonID根据Fido设备所在的外部系统环境所决定，一般而言，PersonalID代表正在使用这个操作系统的用户名
 
@@ -61,8 +64,19 @@
   
   <h3 id="16">KeyHandle</h3>将RawKeyHandle用认证器的内部加密算法进行加密（官方回答为AES加密算法）后的KeyHandle。保证了密钥的安全性。
 
-  <h3 id="17">KeyId</h3>KeyID是用于寻找KeyHandle的关键字段。KeyId是KeyHandle的摘要数值，在用户使用APP注册KeyHandle的时候，生成的数据。KeyId是认证器，用户，APP的三元唯一标识体。
+  <h3 id="17">KeyId</h3>KeyId，顾名思义就是KeyHandle的Id,其最关键的作用在于寻找KeyHandle（寻找KeyHandle的过程也就是寻找Pri_Key的过程）的关键字段。KeyId是用户在使用Fido UAF协议进行注册操作的时候由认证器生成的数据。  
+
+  KeyId和AAID是在一个认证器上，组成了用户注册产生数据的唯一元组。而这一个数据元组，往往是Fido Server用来在认证器上关键数据查找的依据。
 
   <h3 id="18">KeyRegistrationData (KRD)</h3>KRD顾名思义就是在注册过程中认证器产生的关键信息，KRD说白了一群数据的集合，这些数据包括:AAID,公钥，认证器信息，挑战信息的签名，签名次数的计数器（int）等信息。这些信息都是注册过程中，认证器产生的关键信息，对之后的认证过程呢起了关键作用.
 
   <h3 id="19">User Verification Token</h3>认证器在识别用户身份成功后，会生成的字段信息，并且认证器会把这个信息交给ASM，用于后续操作流程。没有正确的User Verification Token，认证器是无法响应请求的。注：生成User Verification Token是由认证器自己决定的，不统一规定。
+
+
+  <h3 id="20">ASMToken</h3>ASMToken顾名思义，就是ASM的身份认证数据，ASMToken其实就是一串固定的随机数，由ASM自己产生，并且由ASM自己保护。每个ASM都有属于自己的ASMToken，用来让认证器信任ASM。
+
+  <h3 id="21">PersonaId</h3>PersonId主要指的是ASM所处的操作系统的用户帐号信息，比如Android就是使用当前系统的用户帐号。
+
+  <h3 id="22">Server Challenge</h3>来自服务器的挑战信息。所谓的挑战信息，也就是有Fido Server在Fido UAF协议中发起的一串随机的数值，用于让客户端用私钥进行签名，之后返回服务器后，验证挑战的签名是否正确。
+
+  <h3 id="23">Sign Counter</h3> 一个由认证器控制的自增数值，主要记录使用认证器使用私钥的次数。当然，这个数值也保存在Fido Server，用于Fido Server来检测认证器是否被克隆。
