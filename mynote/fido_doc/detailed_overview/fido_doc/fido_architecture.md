@@ -43,25 +43,36 @@
     
 1.  fido注册的过程：
    </br>fido注册的基本流程大致阐述如下：    
-     * 首先，客户端发送注册信息给fido Server(注册信息包含用户名)
+     * 首先，由第三方APP发出注册操作的请求操作给Fido Server(请求信息中包含用户输入的用户名)。
      * fido Server收到客户端的请求之后，会在生成一系列的注册有关请求数据。这些请求数据包括header，挑战信息等数据
+     * 3.第三方APP将Fido Server返回的数据简单封装后，请求Fido Client，调用fido UAF 的API。
      * fido client拿到服务器的请求数据后，搜集设备商所有的认证器信息，进行挑选和匹配，选择一个合理的认证器；同时形成最终的挑战信息。最后将数据向ASM层次传递。
      * ASM收到信息之后，根据认证器索引去查找对应的认证器，命令认证器认证用户身份，如果认证通过，则使用认证器的摘要算法来生成最终挑战信息的摘要值，并且生成KHAccessToken的数据，再次请求认证器。
      * 认证器收到ASM的信息后，生成公私钥对，同时然后将公私钥对加入KeyHandle中，生成可以找到KeyHandle的KeyId，同时生成其他认证信息（比如证书信息等），并用私钥进行对上述的信息进行签名，然后将KeyHandle（加密后）和KeyId，公钥信息返回给ASM。
      * ASM拿到认证器的信息之后，根据认证器的类型，决定是否存储KeyId和KeyHandle，然后将认证器返回的信息加以封装返回给fido client
-     * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息发送给fido服务器
+     * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息(通过第三方APP)发送给fido服务器
      * fido服务器收到信息后，首先验证证书有效性，组织签名数据，使用对应的公钥做验签操作，验签成功后，告诉客户端注册成功。
      * 大致的操作图如图所示：![](pic/register_all.png)
 2.  fido认证的过程：
-      * 首先，客户端请求fidoserver进行验证的过程
-     * fido Sever收到客户端的请求之后，会在生成一系列的认证有关请求数据（包括KeyID）
+     * 首先，第三方APP请求Fido Server，来进行认证的操作。
+     * fido Server收到客户端的请求之后，会在生成一系列的认证有关请求数据（包括KeyID）
      * fido client拿到服务器的认证数据后，搜集所有可以用的认证器信息，并且让用户选择对应的认证器，同时形成最终的挑战信息。然后组织数据，向ASM层发起请求。
-     * ASM收到信息之后，根据认证器索引去查找对应的认证器，命令认证器认证用户身份，如果认证通过，用认证器的摘要算法生成挑战的摘要信息，然后根据服务器发送的KeyID找到对应的KeyHanlde，并且生成KHAccessToken，将数据发送给认证器
-     * 认证器收到ASM的信息后，通过KHAccessToken查找可以信任的KeyHandle，经过一系列的筛选后，找到对应的KeyHandle，然后用认证器的加密算法来解密KeyHandle.然后组织返回给服务器的数据,比如AAID，CHALLENGE,COUNTERS[引用计数器]等。最后用KeyHandle中的私钥去对要返回给fidosever的数据进行签名，将数据返回给ASM。
+     * ASM收到信息之后，根据认证器索引去查找对应的认证器，命令认证器认证用户身份，如果认证通过，用认证器的摘要算法生成挑战的摘要信息，然后根据服务器发送的KeyID找到对应的KeyHanlde，并且生成KHAccessToken，将数据发送给认证器。
+     * 认证器收到ASM的信息后，通过KHAccessToken来查找可以信任的KeyHandle，经过一系列的筛选后，找到对应的KeyHandle，然后用认证器的加密算法来解密KeyHandle.然后组织返回给服务器的数据,比如AAID，COUNTERS[引用计数器]等。最后用KeyHandle中的私钥去对要返回给fidosever的数据进行签名，将数据返回给ASM。
      * ASM拿到认证器的信息之后，做一些简单的封装，交给Fido Client。
-     * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息发送给fido服务器。
+     * fido client 再次为信息进行封装处理，加入Header信息等，然后将信息通过第三方APP发送给fido服务器。
      * fido服务器收到信息后，织签名数据，使用对应的公钥做验签操作，若验签成功，则告诉客户端验证过程成功。
      *  大致的操作图如图所示：![](pic/renzheng_all.png)
+     
+3.  fido注销的过程：
+    * 首先，第三方APP会向服务器进行注销操作的请求。
+    * 服务器收到请求后，组织注销操作所需要的数据，其中最关键的数据就是注册时候产生的KeyID
+    * 第三方APP将Fido Server返回的数据简单封装后，请求Fido Client，调用Fido UAF 的API。
+    * 由于Fido Server的注销时候所用的数据比较简单，所以Fido Client在收到第三方APP的请求数据后，不像注册和认证的过程中那样，并不做过多的处理，直接组织数据请求ASM
+    * (由于此处仅仅讨论一因子认证器的情况)：ASM收到FidoClient数据后,会直接根据KeyID来删除注册过程存储在数据库中的KeyHandle，并且请求认证器。
+    * 认证器为一因子认证器，在注销的操作中不做任何处理，直接告诉ASM操作成功。
+    * 7.之后ASM，FidoClient都依次层层返回操作成功的状态，并不做过多的数据处理，直至第三方APP收到注销成功的响应，告诉用户注销成功，并且不再请求服务器。
+   
  <h2 id="2.1">2.Fido Server</h2>
    <h3 id="2.1">Fido Server</h3>由于本文档主要是讲解fido客户端的，所以，fido服务器这里简单说明下功能：
     

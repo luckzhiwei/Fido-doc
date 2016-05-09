@@ -231,7 +231,7 @@
 
 
  <h2 id="4.1">4.Deregistration操作</h2>
-   <h3 id="4.1">Deregistration 操作的目的</h3>顾名思义，这个单词就是注销的意思。那么，进行Deregistration的操作的目的，主要是为了将注册过程中username对应的认证器，进行解除绑定的作用。
+   <h3 id="4.1">Deregistration 操作的目的</h3>顾名思义，这个单词就是注销的意思。那么，进行Deregistration的操作的目的，主要是为了将注册过程中username对应的认证器，进行解除绑定的作用，也就是消除注册过程中的用户名。
 
    <h3 id="4.2">Deregistration 操作具体流程以及数据演变</h3>
    <h5 id="4.2.1">1.Android client app</h5>
